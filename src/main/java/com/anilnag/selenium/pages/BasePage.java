@@ -28,20 +28,21 @@ public abstract class BasePage {
     }
 
     /**
-     * A freshly-routed page can still be mid-hydration when this runs — React re-renders the
-     * input against its (still-empty) initial state a moment later and silently wipes out
-     * whatever was just typed. Verifying the value actually stuck, and retrying if not, is more
-     * reliable than trusting sendKeys() alone.
+     * React-controlled inputs track their value through the DOM's *native* property setter; a
+     * plain sendKeys()/clear() pair can land without the framework's own state ever seeing it, so
+     * the value gets wiped back to empty on the next render. Calling the native setter directly
+     * (bypassing any instance-level override) and dispatching a real "input" event is what
+     * actually reaches React's onChange, and is far more reliable here than sendKeys().
      */
     protected void type(By locator, String text) {
-        for (int attempt = 1; attempt <= 3; attempt++) {
-            WebElement element = waitVisible(locator);
-            element.clear();
-            element.sendKeys(text);
-            if (text.equals(element.getDomProperty("value"))) {
-                return;
-            }
-        }
+        WebElement element = waitVisible(locator);
+        String script =
+                "var el = arguments[0], value = arguments[1];"
+                        + "var proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;"
+                        + "Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value);"
+                        + "el.dispatchEvent(new Event('input', { bubbles: true }));"
+                        + "el.dispatchEvent(new Event('change', { bubbles: true }));";
+        ((JavascriptExecutor) driver).executeScript(script, element, text);
     }
 
     protected String textOf(By locator) {

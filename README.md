@@ -24,7 +24,7 @@ Locators live once per page object; tests never see a `By` selector directly, so
 Two saucedemo.com quirks this framework works around deliberately, not accidentally:
 
 - **Nav clicks**: its links are client-routed anchors with no `href`, and the visible icon is a CSS pseudo-element — the anchor's real hit box doesn't line up with where a coordinate-based native click lands. `BasePage.clickAndWaitForUrl()` invokes `element.click()` via JavaScript instead, bypassing hit-testing.
-- **Form input**: a freshly-routed page can still be mid-hydration when a field is typed into — React re-renders the input against its (still-empty) initial state a moment *later*, silently wiping out what was already typed. An immediate post-`sendKeys()` check misses this since the clobber hasn't happened yet. `CheckoutInfoPage.fillInfoAndContinue()` fills all three fields, waits past the hydration window, then re-verifies every field and retypes anything that got wiped before submitting.
+- **Form input**: its checkout form is a React-controlled input — the app's state only updates through React's tracked native setter, so a plain `sendKeys()`/`clear()` pair can land in the DOM without React's own state ever seeing it, and the field reverts to empty on the next render. `BasePage.type()` sets the value through the real native property setter and dispatches a genuine `input` event, which is what React's `onChange` actually listens for.
 
 ## Run it
 
