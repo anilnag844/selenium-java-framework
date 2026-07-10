@@ -21,6 +21,8 @@ testng.xml          Suite definition (UI + API test groups)
 
 Locators live once per page object; tests never see a `By` selector directly, so a UI change touches one file, not every spec that exercises it. Page objects return the next page object from each action (`loginAs()` returns `InventoryPage`, `goToCheckout()` returns `CheckoutInfoPage`), so tests read as a chained user journey instead of a flat script.
 
+saucedemo.com's nav links are client-routed anchors with no `href`, driven entirely by a bound click handler — occasionally a click lands without the route change registering. `BasePage.clickAndWaitForUrl()` retries in short intervals rather than failing on the first miss, which is far more reliable against this than one long wait.
+
 ## Run it
 
 ```bash

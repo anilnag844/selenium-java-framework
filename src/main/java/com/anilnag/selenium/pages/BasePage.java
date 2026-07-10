@@ -49,16 +49,22 @@ public abstract class BasePage {
     }
 
     /**
-     * SPA route changes occasionally don't register on the first click if it lands before the
-     * framework finishes binding its handlers, so this retries once before failing the test.
+     * saucedemo.com's nav links are client-routed anchors with no href, driven purely by a bound
+     * click handler — occasionally a click lands without the route change registering. Short
+     * retries recover from this far more reliably than one long wait.
      */
     protected void clickAndWaitForUrl(By locator, String urlFragment) {
-        click(locator);
-        try {
-            waitForUrlContains(urlFragment);
-        } catch (org.openqa.selenium.TimeoutException retryableTimeout) {
+        final int maxAttempts = 4;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             click(locator);
-            waitForUrlContains(urlFragment);
+            try {
+                new WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions.urlContains(urlFragment));
+                return;
+            } catch (org.openqa.selenium.TimeoutException timeout) {
+                if (attempt == maxAttempts) {
+                    throw timeout;
+                }
+            }
         }
     }
 }
