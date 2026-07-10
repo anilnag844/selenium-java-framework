@@ -43,4 +43,8 @@ public abstract class BasePage {
             return false;
         }
     }
+
+    protected void waitForUrlContains(String fragment) {
+        wait.until(ExpectedConditions.urlContains(fragment));
+    }
 }

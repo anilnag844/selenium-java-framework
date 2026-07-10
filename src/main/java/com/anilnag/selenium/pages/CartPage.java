@@ -34,6 +34,7 @@ public class CartPage extends BasePage {
 
     public CheckoutInfoPage goToCheckout() {
         click(checkoutButton);
+        waitForUrlContains("checkout-step-one");
         return new CheckoutInfoPage(driver);
     }
 }

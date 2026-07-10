@@ -2,6 +2,7 @@ package com.anilnag.selenium.pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class LoginPage extends BasePage {
 
@@ -25,6 +26,9 @@ public class LoginPage extends BasePage {
         type(usernameInput, username);
         type(passwordInput, password);
         click(loginButton);
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("inventory"),
+                ExpectedConditions.visibilityOfElementLocated(errorMessage)));
         return new InventoryPage(driver);
     }
 
