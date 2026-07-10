@@ -26,7 +26,9 @@ public class CheckoutInfoPage extends BasePage {
             type(lastNameInput, lastName);
             type(postalCodeInput, postalCode);
             sleepMillis(500);
-            if (fieldsStillHold(firstName, lastName, postalCode)) {
+            boolean stable = fieldsStillHold(firstName, lastName, postalCode);
+            System.out.println("DEBUG fillInfoAndContinue attempt=" + attempt + " stable=" + stable);
+            if (stable) {
                 break;
             }
         }
