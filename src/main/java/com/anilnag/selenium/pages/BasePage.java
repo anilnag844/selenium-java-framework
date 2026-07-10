@@ -23,8 +23,15 @@ public abstract class BasePage {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
+    /**
+     * saucedemo.com's nav elements are client-routed with no href, and their visible icon is
+     * often a CSS pseudo-element — the real hit box doesn't reliably line up with where a
+     * coordinate-based native click lands. Invoking element.click() via JS bypasses hit-testing
+     * entirely and lands on the node itself.
+     */
     protected void click(By locator) {
-        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
     }
 
     /**
@@ -61,15 +68,8 @@ public abstract class BasePage {
         wait.until(ExpectedConditions.urlContains(fragment));
     }
 
-    /**
-     * saucedemo.com's nav links are client-routed anchors with no href, and their visible icon is
-     * a CSS pseudo-element — the anchor's real hit box doesn't line up with where a native click
-     * lands, so WebDriver's coordinate-based click silently misses. Invoking element.click() via
-     * JS bypasses hit-testing entirely and lands on the node itself.
-     */
     protected void clickAndWaitForUrl(By locator, String urlFragment) {
-        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        click(locator);
         waitForUrlContains(urlFragment);
     }
 }
