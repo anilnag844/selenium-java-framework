@@ -1,6 +1,7 @@
 package com.anilnag.selenium.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -49,22 +50,14 @@ public abstract class BasePage {
     }
 
     /**
-     * saucedemo.com's nav links are client-routed anchors with no href, driven purely by a bound
-     * click handler — occasionally a click lands without the route change registering. Short
-     * retries recover from this far more reliably than one long wait.
+     * saucedemo.com's nav links are client-routed anchors with no href, and their visible icon is
+     * a CSS pseudo-element — the anchor's real hit box doesn't line up with where a native click
+     * lands, so WebDriver's coordinate-based click silently misses. Invoking element.click() via
+     * JS bypasses hit-testing entirely and lands on the node itself.
      */
     protected void clickAndWaitForUrl(By locator, String urlFragment) {
-        final int maxAttempts = 4;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            click(locator);
-            try {
-                new WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions.urlContains(urlFragment));
-                return;
-            } catch (org.openqa.selenium.TimeoutException timeout) {
-                if (attempt == maxAttempts) {
-                    throw timeout;
-                }
-            }
-        }
+        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        waitForUrlContains(urlFragment);
     }
 }
