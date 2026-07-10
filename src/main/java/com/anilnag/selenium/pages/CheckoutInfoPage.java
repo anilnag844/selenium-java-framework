@@ -18,8 +18,7 @@ public class CheckoutInfoPage extends BasePage {
         type(firstNameInput, firstName);
         type(lastNameInput, lastName);
         type(postalCodeInput, postalCode);
-        click(continueButton);
-        waitForUrlContains("checkout-step-two");
+        clickAndWaitForUrl(continueButton, "checkout-step-two");
         return new CheckoutOverviewPage(driver);
     }
 }

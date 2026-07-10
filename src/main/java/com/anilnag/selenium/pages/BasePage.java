@@ -47,4 +47,18 @@ public abstract class BasePage {
     protected void waitForUrlContains(String fragment) {
         wait.until(ExpectedConditions.urlContains(fragment));
     }
+
+    /**
+     * SPA route changes occasionally don't register on the first click if it lands before the
+     * framework finishes binding its handlers, so this retries once before failing the test.
+     */
+    protected void clickAndWaitForUrl(By locator, String urlFragment) {
+        click(locator);
+        try {
+            waitForUrlContains(urlFragment);
+        } catch (org.openqa.selenium.TimeoutException retryableTimeout) {
+            click(locator);
+            waitForUrlContains(urlFragment);
+        }
+    }
 }
