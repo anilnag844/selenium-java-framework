@@ -27,10 +27,21 @@ public abstract class BasePage {
         wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
     }
 
+    /**
+     * A freshly-routed page can still be mid-hydration when this runs — React re-renders the
+     * input against its (still-empty) initial state a moment later and silently wipes out
+     * whatever was just typed. Verifying the value actually stuck, and retrying if not, is more
+     * reliable than trusting sendKeys() alone.
+     */
     protected void type(By locator, String text) {
-        WebElement element = waitVisible(locator);
-        element.clear();
-        element.sendKeys(text);
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            WebElement element = waitVisible(locator);
+            element.clear();
+            element.sendKeys(text);
+            if (text.equals(element.getDomProperty("value"))) {
+                return;
+            }
+        }
     }
 
     protected String textOf(By locator) {

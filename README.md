@@ -21,7 +21,10 @@ testng.xml          Suite definition (UI + API test groups)
 
 Locators live once per page object; tests never see a `By` selector directly, so a UI change touches one file, not every spec that exercises it. Page objects return the next page object from each action (`loginAs()` returns `InventoryPage`, `goToCheckout()` returns `CheckoutInfoPage`), so tests read as a chained user journey instead of a flat script.
 
-saucedemo.com's nav links are client-routed anchors with no `href`, and their visible icon is a CSS pseudo-element — the anchor's real hit box doesn't line up with where a coordinate-based native click lands. `BasePage.clickAndWaitForUrl()` invokes `element.click()` via JavaScript instead, which bypasses hit-testing and lands on the node directly.
+Two saucedemo.com quirks this framework works around deliberately, not accidentally:
+
+- **Nav clicks**: its links are client-routed anchors with no `href`, and the visible icon is a CSS pseudo-element — the anchor's real hit box doesn't line up with where a coordinate-based native click lands. `BasePage.clickAndWaitForUrl()` invokes `element.click()` via JavaScript instead, bypassing hit-testing.
+- **Form input**: a freshly-routed page can still be mid-hydration when a field is typed into — React re-renders the input against its (still-empty) initial state a moment later and silently wipes out what was just typed. `BasePage.type()` verifies the value actually stuck and retries if not, rather than trusting `sendKeys()` alone.
 
 ## Run it
 
